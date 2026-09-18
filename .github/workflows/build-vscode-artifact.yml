@@ -1,0 +1,98 @@
+name: build-vscode-artifact
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - "*"
+    paths:
+      - "packages/kilo-vscode/**"
+      - "packages/opencode/**"
+      - ".github/workflows/build-vscode-artifact.yml"
+
+jobs:
+  build-vsix:
+    name: Build VSIX
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Setup Bun
+        uses: ./.github/actions/setup-bun
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Setup Zig for Linux sandbox helpers
+        uses: goto-bus-stop/setup-zig@v2
+        with:
+          version: 0.14.0
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Build CLI dist
+        working-directory: ./packages/opencode
+        run: ./script/build.ts
+
+      - name: Bundle extension for production
+        working-directory: ./packages/kilo-vscode
+        run: bun run bundle:production
+
+      - name: Install VSCE
+        run: bun install -g @vscode/vsce
+
+      - name: Build extension VSIX
+        working-directory: ./packages/kilo-vscode
+        env:
+          CLI_DIST_DIR: ../../packages/opencode/dist
+        run: bun run script/build.ts
+
+      - name: Upload VSIX linux-x64 artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: kilo-vscode-linux-x64
+          path: packages/kilo-vscode/out/kilo-vscode-linux-x64.vsix
+          if-no-files-found: error
+
+      - name: Upload VSIX linux-arm64 artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: kilo-vscode-linux-arm64
+          path: packages/kilo-vscode/out/kilo-vscode-linux-arm64.vsix
+          if-no-files-found: error
+
+      - name: Upload VSIX darwin-x64 artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: kilo-vscode-darwin-x64
+          path: packages/kilo-vscode/out/kilo-vscode-darwin-x64.vsix
+          if-no-files-found: error
+
+      - name: Upload VSIX darwin-arm64 artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: kilo-vscode-darwin-arm64
+          path: packages/kilo-vscode/out/kilo-vscode-darwin-arm64.vsix
+          if-no-files-found: error
+
+      - name: Upload VSIX win32-x64 artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: kilo-vscode-win32-x64
+          path: packages/kilo-vscode/out/kilo-vscode-win32-x64.vsix
+          if-no-files-found: error
+
+      - name: Upload VSIX win32-arm64 artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: kilo-vscode-win32-arm64
+          path: packages/kilo-vscode/out/kilo-vscode-win32-arm64.vsix
+          if-no-files-found: error
