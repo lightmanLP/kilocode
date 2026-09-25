@@ -4,11 +4,7 @@ on:
   workflow_dispatch:
   push:
     branches:
-      - "*"
-    paths:
-      - "packages/kilo-vscode/**"
-      - "packages/opencode/**"
-      - ".github/workflows/build-vscode-artifact.yml"
+      - "devbuild"
 
 jobs:
   build-vsix:
