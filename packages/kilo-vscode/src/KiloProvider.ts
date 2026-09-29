@@ -2489,7 +2489,14 @@ export class KiloProvider implements vscode.WebviewViewProvider, TelemetryProper
       connectionState: this.connectionState,
       listSessions: client
         ? (dir: string) =>
-            client.session.list({ directory: dir, roots: true }, { throwOnError: true }).then(({ data }) => data)
+            client.session.list(
+              {
+                directory: dir,
+                roots: true,
+                limit: vscode.workspace.getConfiguration("kilo-code.new").get<number>("sessionsLimit", 100)
+              },
+              { throwOnError: true }
+            ).then(({ data }) => data)
         : null,
       listSessionPage: client ? (dir: string, cursor?: number) => fetchSessionPage(client, { dir, cursor }) : null,
       page: this.sessionPages,

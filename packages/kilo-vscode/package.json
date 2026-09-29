@@ -1282,6 +1282,12 @@
             "split"
           ],
           "description": "Remembered unified/split choice for Kilo diff viewers. Set automatically the first time you toggle the style in a diff viewer."
+        },
+        "kilo-code.new.sessionsLimit": {
+          "type": "integer",
+          "default": 100,
+          "minimum": 1,
+          "description": "Max sessions shown in the history list"
         }
       }
     }
